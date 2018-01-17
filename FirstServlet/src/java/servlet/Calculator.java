@@ -52,7 +52,7 @@ public class Calculator extends HttpServlet {
             out.println("<body>");
             ArrayList<String> lst;
             try {
-
+//
                 HttpSession ses = request.getSession(true);
 
                 if (ses.isNew()) {
