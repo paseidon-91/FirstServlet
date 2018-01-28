@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +23,6 @@ import javax.servlet.http.HttpSession;
  * @author Alexp_000
  */
 public class Calculator extends HttpServlet {
-
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -39,7 +40,8 @@ public class Calculator extends HttpServlet {
         double one = Double.valueOf(request.getParameter("one"));
         double two = Double.valueOf(request.getParameter("two"));
         String operation = request.getParameter("operation");
-
+        HashMap<String,ArrayList<String>> map = (HashMap)request.getServletContext().getAttribute(SESSION_MAP);
+        if (map == null) map = new HashMap<>();
     
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
@@ -48,36 +50,49 @@ public class Calculator extends HttpServlet {
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Servlet Calculator</title>");
+            out.println("<link rel = 'stylesheet' href='" + request.getContextPath() + "/Styles/Calc_style.css' type='text/css'>");
             out.println("</head>");
             out.println("<body>");
-            ArrayList<String> lst;
+             ArrayList<String> lst;
             try {
-//
+//  
                 HttpSession ses = request.getSession(true);
-
-                if (ses.isNew()) {
+                if ( ses.isNew()) {
                     lst = new ArrayList<String>();
-                }else{
-                    lst = (ArrayList<String>)ses.getAttribute("formula");
+               }else{
+                    lst = (ArrayList)ses.getAttribute("formula");
                 }
                 /*if (ses.isNew()) {
                     lst.clear();
                 }*/
                 lst.add(printCalc(one,two,operation));
-                
                 ses.setAttribute("formula", lst);
-
-                out.println("<h1> Идентификатор сессии: " + ses.getId() + "</h1>");
-                out.println("<h2> Количество операций: " + lst.size() + "</h2>");
-                for (String x : lst) {
-                    out.println("<h3>Servlet Calculator at " + x + "</h3>");
-                }               
                 
-            } catch (Exception e) {
-                out.println("<h1> Ошибка ввода параметров</h1>");
-                for (StackTraceElement x : e.getStackTrace()) {
-                    out.println("<h3> " + x.toString() + "</h3>");
+                out.println("<table cellpadding = '20';>");
+                out.println("<tr>");
+                out.println("<td style = 'vertical-align:top';>");
+               
+                out.println("<h2> Идентификатор сессии: " + ses.getId() + "</h2>");
+                for (String x : lst) {
+                    out.println("<h4> " + x + "</h4>");
                 }
+                                                
+                map.put(ses.getId(), lst);
+                getServletContext().setAttribute(SESSION_MAP, map);
+                
+                out.println("</td>");
+                out.println("<td style = 'vertical-align:top';>");
+                for(Map.Entry<String, ArrayList<String>> x: map.entrySet()){
+                 out.println("<h2 style = 'color:red'> Идентификатор сессии: " + x.getKey() + "</h2>");
+                    for (String y: x.getValue()) {
+                        out.println("<h4> " + y + "</h4>");         
+                    }
+                }
+                out.println("</td>");
+                out.println("</tr>");
+                out.println("</table>");
+            } catch (Exception e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 
             } finally {
                 out.println("</body>");
@@ -85,8 +100,9 @@ public class Calculator extends HttpServlet {
             }
         }
     }
+    private static final String SESSION_MAP = "map";
 
-    public static String printCalc(double one, double two, String operation) {
+    public static String printCalc(double one, double two, String operation) throws IOException {
         if (operation.equals("+")) {
             return one + " + " + two + " = " + CalcOperations.add(one, two);
         } else if (operation.equals("-")) {
@@ -95,8 +111,8 @@ public class Calculator extends HttpServlet {
             return one + " * " + two + " = " + CalcOperations.multiply(one, two);
         } else if (operation.equals("div")) {
             return one + " / " + two + " = " + CalcOperations.divide(one, two);
-        }
-        return null;
+        }else throw new IOException();
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

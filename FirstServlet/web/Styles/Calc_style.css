@@ -24,16 +24,8 @@ body{
     float: left;
     clear: both;
    }
-   .content { 
-    width: 79%; 
-    background: #0e0; 
-    padding: 0px; 
-    border: solid 1px black; 
-    float: left; 
-    position: relative; 
-}   
    .sidebar_left { 
-    width: 10%; 
+    width: 50%; 
     height: 100%;      
     background: #00e; 
     padding: 0px; 
@@ -43,7 +35,7 @@ body{
 
 }
    .sidebar_right { 
-    width: 10%; 
+    width: 50%; 
     height: 100%;       
     background: #fc0; 
     padding: 0px; 
